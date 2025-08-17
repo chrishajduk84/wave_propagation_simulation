@@ -4,12 +4,14 @@ version = "0.1.0"
 description = "A simulation tool for electromagnetic wave propagation in layered media such as snow."
 authors = ["chrishajduk84 <chrishajduk84@gmail.com>"]
 
+package-mode = false
+
 [tool.poetry.dependencies]
 python = ">=3.8,<3.14"
 matplotlib = "*"
 numpy = "*"
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 pytest = "*"
 
 [build-system]
