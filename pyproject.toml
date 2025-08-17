@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "wave_propagation_simulation"
+version = "0.1.0"
+description = "A simulation tool for electromagnetic wave propagation in layered media such as snow."
+authors = ["chrishajduk84 <chrishajduk84@gmail.com>"]
+
+[tool.poetry.dependencies]
+python = ">=3.8,<3.14"
+matplotlib = "*"
+numpy = "*"
+
+[tool.poetry.dev-dependencies]
+pytest = "*"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
