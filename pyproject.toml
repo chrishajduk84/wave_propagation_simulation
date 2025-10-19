@@ -10,6 +10,7 @@ package-mode = false
 python = ">=3.8,<3.14"
 matplotlib = "*"
 numpy = "*"
+fdtd = "*"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "*"

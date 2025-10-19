@@ -46,6 +46,7 @@ class Transceiver:
                 pass
             else:
                 picosecond_counter += (1/sample_rate)/1e-12     #Convert samples per second into picoseconds per sample
+        return timed_list
 
 
     def tx(self, iq_sample: complex) -> float:
@@ -60,12 +61,8 @@ if __name__ == "__main__":
     t = Transceiver((0,0))
     g = Stage1D()
     samples = [math.sin(i*2*math.pi/1000) + 1j*0 for i in range(1000)]
-    transmitted = []
-    indexes = []
-    for i in range(len(samples)):
-        indexes.append(i)
-        amplitude = t.tx_schedule(samples[i])
-        transmitted.append(amplitude)
+    indexes = list(range(len(samples)))
+    transmitted = [t.tx_schedule([sample])[0][1] if t.tx_schedule([sample]) else 0 for sample in samples]
 
     # Plot the real part of the total electric field
     plt.figure(figsize=(10, 6))
@@ -76,8 +73,9 @@ if __name__ == "__main__":
 
         stage = g.next_step()
 
-        if i >= 5000:
-            print(stage[4990:5011])
+        # Plot only 1 of 100 frames
+        if i % 100:
+            continue
 
         plt.cla()
         # plt.plot(x, np.real(E_total), label="Total Electric Field (E_total)", color='b')
@@ -91,7 +89,3 @@ if __name__ == "__main__":
         plt.grid(True)
         #plt.show()
         plt.pause(0.0001)
-
-
-
-
