@@ -18,11 +18,11 @@ dt = courant * dx / c
 total_steps = int(1e-6 / dt)
 
 # Animation speed control
-animation_scale_factor = 100  # Higher number = faster animation (skips more steps)
+animation_scale_factor = 10  # Higher number = faster animation (skips more steps)
 
 print(f"Total steps: {total_steps}, dx: {dx}, dt: {dt}")
 print(f"Animation scale factor: {animation_scale_factor} (showing every {animation_scale_factor} steps)")
-t = np.arange(total_steps) * dt
+t = np.arange(total_steps//300) * dt
 
 h = int(420e-3 / dx)
 w = int(350e-3 / dx)
@@ -46,11 +46,11 @@ pml_offset = 60
 ski_thickness = int(3.8e-3 / dx)
 
 # Snow layer thicknesses in grid points
-fresh_snow_thickness = 112      # 56*2 = 112
-aged_snow_thickness = 120       # 60*2 = 120  
-wet_snow_thickness = 120        # 60*2 = 120
-compacted_snow_thickness = 120  # 60*2 = 120
-ice_layer_thickness = 144       # 72*2 = 144
+fresh_snow_thickness = 112      # to convert to mm multiply by dx*1000
+aged_snow_thickness = 120
+wet_snow_thickness = 120
+compacted_snow_thickness = 120
+ice_layer_thickness = 144
 
 # Two ski layers side by side at the same depth - 3.8mm thick each
 ski_depth = 11 + pml_offset
@@ -82,8 +82,9 @@ grid[wet_snow_end:compacted_snow_end, :, 0] = fdtd.Object(permittivity=2.8**2, n
 grid[compacted_snow_end:ice_layer_end, :, 0] = fdtd.Object(permittivity=3.2**2, name="ice_layer")
 
 # Add detector in the second ski layer
-detector_position = ski_depth + ski_thickness//2  # Middle of second ski layer
-grid[detector_position, right_ski_x:right_ski_x+ski_width, 0] = fdtd.detectors.LineDetector(name="ski_detector")
+detector_position = ski_depth# + ski_thickness//2   # Top of second ski layer
+detector_width = ski_width//5
+grid[detector_position, right_ski_x+ski_width//2-detector_width//2:right_ski_x+ski_width//2+detector_width//2, 0] = fdtd.detectors.LineDetector(name="ski_detector")
 
 #grid[7.5e-6:8.0e-6, 11.8e-6:13.0e-6, 0] = fdtd.LineSource(
 #    period = 1550e-9 / (3e8), name="source"
@@ -116,6 +117,7 @@ fig2 = plt.figure(2, figsize=(8, 6))  # Figure 2: Detector readings
 plt.show(block=False)
 
 print("Simulation completed.")
+print(f"Running for {total_steps} steps. Waveform source running for {len(waveform_array)} steps.")
 for i in range(total_steps):
     grid.step()
     
@@ -191,7 +193,11 @@ for i in range(total_steps):
         for boundary in layer_boundaries:
             plt.axhline(y=boundary, color='gray', linestyle=':', alpha=0.5, linewidth=0.8)
         
-        plt.clim(0,0.001)
+        # While transmitting, plot at higher clim range, when not transmitting, use lower range
+        if len(waveform_array) >= i:
+            plt.clim(0,0.001)
+        else:
+            plt.clim(0,0.00001)
         plt.colorbar()
         plt.tight_layout()
         plt.draw()
@@ -200,30 +206,32 @@ for i in range(total_steps):
         plt.figure(2)
         plt.clf()  # Clear the figure
 
-
-        #print(detector_data_E[0][:i+1])
-        #print(detector_data_E[1][:i+1])
-        #print(detector_data_E[2][:i+1])
-            
-        plt.plot(np.array(time_steps[:i+1]) * 1e9, detector_data_E[2][:i+1], 'b-', linewidth=1)
+        # Plot all three vector components
+        time_ns = np.array(time_steps[:i+1]) * 1e9
+        plt.plot(time_ns, detector_data_E[0][:i+1], 'r-', linewidth=1, label='Ex (x-component)')
+        plt.plot(time_ns, detector_data_E[1][:i+1], 'g-', linewidth=1, label='Ey (y-component)')
+        plt.plot(time_ns, detector_data_E[2][:i+1], 'b-', linewidth=1, label='Ez (z-component)')
+        
         plt.xlabel('Time (ns)')
         plt.ylabel('Electric Field (V/m)')
-        plt.title('Detector Reading (Ski Layer)')
+        plt.title('Detector Reading (Ski Layer) - All Components')
         plt.grid(True, alpha=0.3)
+        plt.legend()
         
-        # Set y-axis limits for consistency
-        if len(detector_data_E[2]) > 0:
-            max_val = max(abs(min(detector_data_E[2])), abs(max(detector_data_E[2])))
-            if max_val > 0:
-                plt.ylim(-max_val*1.1, max_val*1.1)
+        # Set y-axis limits for consistency considering all components
+        if len(detector_data_E[0]) > 0 and len(detector_data_E[1]) > 0 and len(detector_data_E[2]) > 0:
+            all_values = detector_data_E[0][:i+1] + detector_data_E[1][:i+1] + detector_data_E[2][:i+1]
+            if all_values:
+                max_val = max(abs(min(all_values)), abs(max(all_values)))
+                if max_val > 0:
+                    plt.ylim(-max_val*1.1, max_val*1.1)
         
         plt.tight_layout()
         plt.draw()
         plt.pause(0.001)  # Small pause to allow plots to update
+        print(f"Step {i+1}/{total_steps} complete.", end="\r")
 
-print(detector_data_E)
 print("Visualization completed.")
-print(grid)
 
 # Keep plots open
 plt.ioff()  # Turn off interactive mode
