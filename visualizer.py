@@ -145,17 +145,12 @@ class Visualizer:
         
         for detector_name, detector_data in detector_data_dict.items():
             ex, ey, ez = detector_data.get_e_field_components()
-            print(ex)
-            print(ey)
-            print(ez)
-            print("----")
+
             # Only plot up to current step
             if len(ex) > current_step:
                 ex = ex[:current_step+1]
                 ey = ey[:current_step+1] 
                 ez = ez[:current_step+1]
-
-            print()
             
             if len(ex) > 0:
                 base_color = colors[color_idx % len(colors)][0]

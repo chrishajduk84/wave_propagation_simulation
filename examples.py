@@ -45,7 +45,8 @@ def example_custom_snow_layers():
         SnowLayerProperties("granular_snow", 0.08, 1.8),    # 80mm granular
         SnowLayerProperties("hard_pack", 0.06, 2.5),        # 60mm hard pack
         SnowLayerProperties("ice_crust", 0.02, 3.5),        # 20mm ice crust
-        SnowLayerProperties("base_ice", 0.1, 3.2)           # 100mm base ice
+        SnowLayerProperties("base_ice", 0.1, 3.2),          # 100mm base ice
+        SnowLayerProperties("dirt_bottom", 0.06, 4.5)       # 150mm dirt bottom layer
     ]
     
     simulator.setup_snow_layers(custom_layers)
@@ -65,8 +66,8 @@ def example_custom_snow_layers():
     detector_configs = [
         DetectorConfig(
             name="ski_detector",
-            position_m=(ski_depth_m, 0.2, 0),
-            size_m=(0, sim_config.ski_width_m/5, 0),
+            position_m=(ski_depth_m, 0.24, 0),
+            size_m=(0.001, sim_config.ski_width_m/5, 0.001),
             detector_type="line"
         )
     ]
@@ -74,8 +75,8 @@ def example_custom_snow_layers():
     
     # Setup visualization (headless for batch processing)
     vis_config = VisualizationConfig(
-        show_field_plot=False,
-        show_detector_plot=False
+        show_field_plot=True,#False,
+        show_detector_plot=True,#False
     )
     simulator.setup_visualization(vis_config)
     
@@ -112,21 +113,21 @@ def example_frequency_sweep():
     detector_configs = [
         DetectorConfig(
             name="detector_1",
-            position_m=(ski_depth_m, 0.15, 0),
-            size_m=(0, 0.02, 0),
+            position_m=(ski_depth_m, 0.12, 0),
+            size_m=(0.01, 0.02, 0.01),
             detector_type="line"
         ),
         DetectorConfig(
             name="detector_2", 
-            position_m=(ski_depth_m, 0.25, 0),
-            size_m=(0, 0.02, 0),
+            position_m=(ski_depth_m, 0.24, 0),
+            size_m=(0.01, 0.02, 0.01),
             detector_type="line"
         )
     ]
     simulator.setup_detectors(detector_configs)
     
     # Visualization off for speed
-    vis_config = VisualizationConfig(show_field_plot=False, show_detector_plot=False)
+    vis_config = VisualizationConfig(show_field_plot=True, show_detector_plot=True)
     simulator.setup_visualization(vis_config)
     
     # Run simulation
@@ -293,7 +294,7 @@ def example_iq_analysis():
     print("=== IQ Analysis Example ===")
     
     # Run a basic simulation
-    simulator = WavePropagationSimulator.create_default_5ghz_simulation(show_visualization=False)
+    simulator = WavePropagationSimulator.create_default_5ghz_simulation(show_visualization=True)
     simulator.initialize_grid()
     results = simulator.run_simulation()
     
